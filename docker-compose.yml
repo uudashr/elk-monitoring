@@ -1,0 +1,88 @@
+version: "3.7"
+services: 
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.6.2
+    ports: 
+      - "9200:9200"
+      - "9300:9300"
+    # healthcheck:
+    #   test: ["CMD", "/mnt/elastic-internal/scripts/readiness-probe-script.sh"]
+    #   interval: 10s
+    #   timeout: 10s
+    #   retries: 10
+    #   start_period: 10s
+    environment: 
+      - discovery.type=single-node
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks:
+      - elastic
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:7.6.2
+    user: root
+    depends_on: 
+      - elasticsearch
+    volumes:
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment: 
+      - strict.perms=false
+      - output.elasticsearch.hosts=["elasticsearch:9200"]
+    networks:
+      - elastic
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.6.2
+    depends_on: 
+      - elasticsearch
+    ports:
+      - 5601:5601
+    # healthcheck:
+    #   test: ["CMD", "/mnt/elastic-internal/scripts/readiness-probe-script.sh"]
+    #   interval: 10s
+    #   timeout: 10s
+    #   retries: 10
+    #   start_period: 10s
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    networks:
+      - elastic
+
+  apm-server:
+    image: docker.elastic.co/apm/apm-server:7.6.2
+    depends_on: 
+      - elasticsearch
+    volumes: 
+      - ./apm-server.yml:/usr/share/apm-server/apm-server.yml:ro
+    environment: 
+      - strict.perms=false
+      - output.elasticsearch.hosts=["elasticsearch:9200"]
+    networks: 
+      - elastic
+
+  echoserver:
+    build: ./echoserver
+    ports:
+      - 8080:8080
+    environment: 
+      ELASTIC_APM_SERVICE_NAME: echoserver              # default to binary name
+      ELASTIC_APM_SERVER_URL: http://apm-server:8200
+      ELASTIC_APM_METRICS_INTERVAL: 3s                # default to 30sec
+      # ELASTIC_APM_LOG_LEVEL: debug
+      # ELASTIC_APM_LOG_FILE: stderr
+    networks:
+      - elastic
+      - app
+
+volumes:
+  esdata:
+    driver: local
+
+networks: 
+  elastic:
+    driver: bridge # default
+  app:
