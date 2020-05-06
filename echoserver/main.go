@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/opentracing/opentracing-go"
 	"go.elastic.co/apm/module/apmot"
@@ -57,6 +58,9 @@ func main() {
 	r.HandleFunc("/healthz", func(w http.ResponseWriter, req *http.Request) {
 		// empty will return 200 OK
 	})
+
+	// Metrics
+	r.Handle("/metrics", promhttp.Handler())
 
 	log.Println("Listening on port 8080...")
 	if err := http.ListenAndServe(":8080", r); err != nil {

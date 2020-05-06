@@ -52,6 +52,36 @@ services:
     networks: 
       - elastic
 
+
+  metricbeat:
+    image: docker.elastic.co/beats/metricbeat:7.6.2
+    user: root
+    depends_on: 
+      - elasticsearch
+    volumes: 
+      - ./metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+      - /proc:/hostfs/proc:ro
+      - /:/hostfs:ro
+    environment: 
+      - setup.kibana.host=kibana:5601
+      - output.elasticsearch.hosts=["elasticsearch:9200"]
+    networks: 
+      - elastic
+
+  prometheus:
+    image: prom/prometheus:v2.18.0
+    depends_on: 
+      - elasticsearch
+    volumes: 
+      - ./apm-server.yml:/usr/share/apm-server/apm-server.yml:ro
+    environment: 
+      - strict.perms=false
+      - output.elasticsearch.hosts=["elasticsearch:9200"]
+    networks: 
+      - elastic
+
   echoserver:
     build: ./echoserver
     ports:
