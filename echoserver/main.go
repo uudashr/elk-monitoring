@@ -1,16 +1,11 @@
 package main
 
 import (
-	"errors"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 
-	"github.com/opentracing-contrib/go-gorilla/gorilla"
-
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 
 	"github.com/opentracing/opentracing-go"
@@ -69,34 +64,4 @@ func main() {
 	}
 
 	log.Println("Stopped")
-}
-
-func opentracingMiddleware(next http.Handler) http.Handler {
-	return gorilla.Middleware(opentracing.GlobalTracer(), next)
-}
-
-func loggingMiddleware(next http.Handler) http.Handler {
-	return handlers.LoggingHandler(os.Stderr, next)
-}
-
-func fib(n int) (int, error) {
-	if n < 0 {
-		return 0, errors.New("n cannot be less than 0")
-	}
-
-	if n < 2 {
-		return n, nil
-	}
-
-	a, err := fib(n - 2)
-	if err != nil {
-		return 0, err
-	}
-
-	b, err := fib(n - 1)
-	if err != nil {
-		return 0, err
-	}
-
-	return a + b, nil
 }
