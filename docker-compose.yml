@@ -72,13 +72,10 @@ services:
 
   prometheus:
     image: prom/prometheus:v2.18.0
-    depends_on: 
-      - elasticsearch
     volumes: 
-      - ./apm-server.yml:/usr/share/apm-server/apm-server.yml:ro
-    environment: 
-      - strict.perms=false
-      - output.elasticsearch.hosts=["elasticsearch:9200"]
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
     networks: 
       - elastic
 
