@@ -11,7 +11,7 @@ services:
     volumes:
       - esdata:/usr/share/elasticsearch/data
     networks:
-      - elastic
+      - monitoring
 
   filebeat:
     image: docker.elastic.co/beats/filebeat:7.6.2
@@ -26,7 +26,7 @@ services:
       - strict.perms=false
       - output.elasticsearch.hosts=["elasticsearch:9200"]
     networks:
-      - elastic
+      - monitoring
 
   kibana:
     image: docker.elastic.co/kibana/kibana:7.6.2
@@ -38,7 +38,7 @@ services:
       ELASTICSEARCH_URL: http://elasticsearch:9200
       ELASTICSEARCH_HOSTS: http://elasticsearch:9200
     networks:
-      - elastic
+      - monitoring
 
   apm-server:
     image: docker.elastic.co/apm/apm-server:7.6.2
@@ -50,7 +50,7 @@ services:
       - strict.perms=false
       - output.elasticsearch.hosts=["elasticsearch:9200"]
     networks: 
-      - elastic
+      - monitoring
 
 
   metricbeat:
@@ -68,7 +68,7 @@ services:
       - setup.kibana.host=kibana:5601
       - output.elasticsearch.hosts=["elasticsearch:9200"]
     networks: 
-      - elastic
+      - monitoring
 
   prometheus:
     image: prom/prometheus:v2.18.0
@@ -77,20 +77,43 @@ services:
     ports:
       - "9090:9090"
     networks: 
-      - elastic
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:6.7.3
+    ports: 
+      - "3000:3000"
+    # environment: 
+      # GF_INSTALL_PLUGINS: grafana-clock-panel 1.0.1,grafana-simple-json-datasource 1.3.5
+    networks: 
+      - monitoring
 
   echoserver:
     build: ./echoserver
     ports:
       - 8080:8080
     environment: 
-      ELASTIC_APM_SERVICE_NAME: echoserver              # default to binary name
+      ELASTIC_APM_SERVICE_NAME: echoserver            # default to binary name
       ELASTIC_APM_SERVER_URL: http://apm-server:8200
       ELASTIC_APM_METRICS_INTERVAL: 3s                # default to 30sec
       # ELASTIC_APM_LOG_LEVEL: debug
       # ELASTIC_APM_LOG_FILE: stderr
     networks:
-      - elastic
+      - monitoring
+      - app
+
+  mathserver:
+    build: ./mathserver
+    ports:
+      - 8081:8080
+    environment: 
+      ELASTIC_APM_SERVICE_NAME: mathserver            # default to binary name
+      ELASTIC_APM_SERVER_URL: http://apm-server:8200
+      ELASTIC_APM_METRICS_INTERVAL: 3s                # default to 30sec
+      # ELASTIC_APM_LOG_LEVEL: debug
+      # ELASTIC_APM_LOG_FILE: stderr
+    networks:
+      - monitoring
       - app
 
 volumes:
@@ -98,6 +121,6 @@ volumes:
     driver: local
 
 networks: 
-  elastic:
+  monitoring:
     driver: bridge # default
   app:

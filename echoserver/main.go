@@ -21,9 +21,10 @@ func main() {
 	r.Use(loggingMiddleware)
 
 	// Echo
-	r.HandleFunc("/echo", func(w http.ResponseWriter, req *http.Request) {
-		contentType := req.Header.Get("Content-Type")
-		b, err := ioutil.ReadAll(req.Body)
+	r.HandleFunc("/echo", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("Got request for /echo")
+		contentType := r.Header.Get("Content-Type")
+		b, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			log.Println("Fail to read body:", err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -34,8 +35,8 @@ func main() {
 		w.Write(b)
 	}).Methods("POST")
 
-	r.HandleFunc("/fib/{n}", func(w http.ResponseWriter, req *http.Request) {
-		vars := mux.Vars(req)
+	r.HandleFunc("/fib/{n}", func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
 		n, err := strconv.Atoi(vars["n"])
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
