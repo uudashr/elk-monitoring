@@ -26,7 +26,8 @@ metricbeat.modules:
   - module: prometheus
     period: 10s
     hosts: ["prometheus:9090"]
-    metrics_path: /federate
+    # metrics_path: /federate
+    metrics_path: /metrics
     query:
       'match[]': '{__name__!=""}'
 
