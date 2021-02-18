@@ -2,7 +2,7 @@ version: "3.7"
 services: 
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.6.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.1
     ports: 
       - "9200:9200"
       - "9300:9300"
@@ -14,7 +14,7 @@ services:
       - monitoring
 
   filebeat:
-    image: docker.elastic.co/beats/filebeat:7.6.2
+    image: docker.elastic.co/beats/filebeat:7.11.1
     user: root
     depends_on: 
       - elasticsearch
@@ -29,7 +29,7 @@ services:
       - monitoring
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:7.6.2
+    image: docker.elastic.co/kibana/kibana:7.11.1
     depends_on: 
       - elasticsearch
     ports:
@@ -41,7 +41,7 @@ services:
       - monitoring
 
   apm-server:
-    image: docker.elastic.co/apm/apm-server:7.6.2
+    image: docker.elastic.co/apm/apm-server:7.11.1
     depends_on: 
       - elasticsearch
     volumes: 
@@ -54,7 +54,7 @@ services:
 
 
   metricbeat:
-    image: docker.elastic.co/beats/metricbeat:7.6.2
+    image: docker.elastic.co/beats/metricbeat:7.11.1
     user: root
     depends_on: 
       - elasticsearch
@@ -71,7 +71,7 @@ services:
       - monitoring
 
   prometheus:
-    image: prom/prometheus:v2.18.0
+    image: prom/prometheus:v2.25.0
     volumes: 
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
     ports:
@@ -80,7 +80,7 @@ services:
       - monitoring
 
   grafana:
-    image: grafana/grafana:6.7.3
+    image: grafana/grafana:7.4.2
     ports: 
       - "3000:3000"
     # environment: 
